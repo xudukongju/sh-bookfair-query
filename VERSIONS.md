@@ -14,6 +14,7 @@
 | Git 标签 `v1.0` 等 | 可回退的版本历史（在 `render-deploy/` 仓库里） |
 
 > 约定：`上海书展查询.html` 与 `render-deploy/index.html` 内容保持一致。改完原件后同步一次即可。
+> 另：因 `versions/` 是 `render-deploy/` 的子目录，其中的快照若引用 `venue/floor1.jpg` 等官方展位图，需使用 `../venue/...` 相对路径；`index.html` 与 `上海书展查询.html` 仍使用 `./venue/...`。
 
 ---
 
