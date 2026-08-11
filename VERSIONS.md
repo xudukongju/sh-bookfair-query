@@ -39,7 +39,11 @@ git checkout v1.0 -- index.html
 前提：本地已按「三」回退好 `index.html`。
 
 - **最简法（不动 git）**：打开 Render 后台 → 该服务 **Deploys** → 找到 v1.0 对应的那次部署 → 点 **Redeploy**（重新部署）。
-- **git 法（需你本机可推送 GitHub）**：`git push` 后 Render 自动按新内容部署。
+- **git 法（从你本机推送）**：注意本仓库「本地 git 历史」与 GitHub 上「API 创建的提交」是两条独立历史，直接 `git push` 会被拒绝。确认无误时用：
+  ```bash
+  git push --force-with-lease origin main && git push --force origin refs/tags/v1.0
+  ```
+  （仅此个人单用途仓库、且你确认无误时才强制推送；否则直接走上面的 Redeploy 更稳。）
 
 ---
 
@@ -49,14 +53,20 @@ git checkout v1.0 -- index.html
    ```bash
    cp 上海书城/上海书展查询.html 上海书城/render-deploy/index.html
    ```
-3. 提交并打标签（由我或你执行）：
+3. 提交并打标签（在本地做，离线即可）：
    ```bash
    cd 上海书城/render-deploy
    git add -A
    git commit -m "v1.1: <本次改了什么>"
    git tag -a v1.1 -m "v1.1: <本次改了什么>"
-   git push && git push --tags
    ```
+   推送上线二选一：
+   - **让我推（推荐）**：你给我一个一次性 GitHub Token（repo 权限），我用 GitHub API 推送 —— 沙箱里 git 协议被限制，直接 push 不通，API 通道可用。
+   - **你本机推**：因本地与 GitHub 历史独立，需强制推送 reconciling：
+     ```bash
+     git push --force-with-lease origin main && git push --force origin refs/tags/v1.1
+     ```
+     （仅此个人仓库、确认无误时执行；强制推送会覆盖 GitHub 历史。）
 4. 生成快照并登记：
    ```bash
    cp index.html versions/index.v1.1.html
