@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>2026 上海书展·文学周 查询</title>
+<style>
+  :root{
+    --red:#c4271f;
+    --red-soft:#fbe9e7;
+    --ink:#23201c;
+    --muted:#8a8378;
+    --line:#ece6dc;
+    --bg:#f6f2ea;
+    --card:#ffffff;
+    --gold:#9a6b1f;
+    --gold-soft:#f6efe0;
+    --green:#2e8b57;
+    --green-soft:#e6f4ec;
+    --gray:#9a948a;
+    --gray-soft:#f0ece4;
+    --blue:#2f6fb0;
+    --blue-soft:#e7f0f8;
+    --purple:#7a4fb0;
+    --purple-soft:#efe8f7;
+    --shadow:0 6px 20px rgba(60,40,20,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,"Microsoft YaHei",sans-serif;
+    background:#e9e3d8;color:var(--ink);display:flex;justify-content:center;min-height:100vh;
+  }
+  .phone{width:100%;max-width:430px;background:var(--bg);min-height:100vh;position:relative;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.12);overflow:hidden;}
+
+  /* Header */
+  .header{background:linear-gradient(135deg,#c4271f,#9e1d16);color:#fff;padding:18px 16px 14px;position:relative;}
+  .header h1{margin:0;font-size:19px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:8px;}
+  .header h1 .tag{font-size:11px;background:rgba(255,255,255,.22);padding:2px 7px;border-radius:20px;font-weight:600;}
+  .header .sub{margin-top:4px;font-size:12px;opacity:.9;}
+  .header .meta{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;}
+  .header .meta span{font-size:11px;background:rgba(255,255,255,.15);padding:3px 9px;border-radius:20px;}
+  .search{margin-top:12px;display:flex;align-items:center;gap:8px;background:#fff;border-radius:24px;padding:9px 14px;color:#555;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+  .search input{flex:1;border:0;outline:0;font-size:14px;background:transparent;color:#222;}
+
+  /* Tabs */
+  .tabs{display:flex;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;}
+  .tabs .tab{flex:1;text-align:center;padding:12px 0;font-size:14px;color:var(--muted);font-weight:600;position:relative;cursor:pointer;}
+  .tabs .tab.active{color:var(--red);}
+  .tabs .tab.active::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:30px;height:3px;background:var(--red);border-radius:3px;}
+  .tabs .tab .badge{display:inline-block;min-width:16px;height:16px;line-height:16px;background:var(--red);color:#fff;font-size:10px;border-radius:9px;padding:0 4px;margin-left:3px;vertical-align:middle;}
+
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:84px;}
+
+  /* Filters */
+  .filters{padding:12px 14px 4px;background:var(--bg);}
+  /* category segment */
+  .seg{display:flex;background:var(--gray-soft);border-radius:12px;padding:4px;gap:4px;}
+  .seg .seg-item{flex:1;text-align:center;padding:8px 4px;font-size:12.5px;color:#666;font-weight:600;border-radius:9px;cursor:pointer;white-space:nowrap;}
+  .seg .seg-item.active{background:#fff;color:var(--red);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  .filter-label{font-size:12px;color:var(--muted);margin:12px 0 7px 2px;}
+  .date-pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;}
+  .date-pills::-webkit-scrollbar{display:none;}
+  .pill{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:7px 12px;font-size:12px;color:#555;text-align:center;cursor:pointer;min-width:54px;line-height:1.25;}
+  .pill b{display:block;font-size:13px;font-weight:700;}
+  .pill.active{border-color:var(--red);background:var(--red-soft);color:var(--red);}
+  .status-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 13px;font-size:12px;color:#555;cursor:pointer;}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .booth-note{margin-top:12px;background:var(--blue-soft);border-radius:12px;padding:11px 13px;font-size:12.5px;color:#2b4a66;line-height:1.6;}
+  .booth-note b{color:var(--blue);}
+
+  .result-info{padding:10px 16px 2px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+  .result-info b{color:var(--red);}
+
+  /* type tag */
+  .type-tag{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:6px;font-weight:700;margin-bottom:5px;vertical-align:middle;}
+  .t-lit{background:var(--purple-soft);color:var(--purple);}
+  .t-lecture{background:var(--red-soft);color:var(--red);}
+  .t-booth{background:var(--blue-soft);color:var(--blue);}
+
+  /* Event card */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 14px;padding:13px 14px;box-shadow:var(--shadow);cursor:pointer;transition:transform .08s;}
+  .card:active{transform:scale(.99);}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .card .name{font-size:15px;font-weight:700;line-height:1.35;}
+  .card .guest{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .card .guest b{color:var(--ink);font-weight:600;}
+  .badge-status{flex:0 0 auto;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;white-space:nowrap;}
+  .s-open{background:var(--green-soft);color:var(--green);}
+  .s-full{background:#fdeaea;color:#c0392b;}
+  .s-free{background:var(--blue-soft);color:var(--blue);}
+  .s-media{background:var(--gray-soft);color:var(--gray);}
+  .card .row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#555;margin-top:9px;}
+  .card .row svg{flex:0 0 auto;opacity:.7;}
+  .card .row .bookbtn{margin-left:auto;background:var(--red-soft);color:var(--red);border:0;border-radius:18px;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px;}
+  .card .row .bookbtn.added{background:var(--gray-soft);color:var(--gray);}
+  .card .desc{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;background:var(--gray-soft);border-radius:8px;padding:7px 9px;}
+
+  /* Publisher view */
+  .pub-hint{margin:12px 16px 0;font-size:12px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;line-height:1.5;}
+  .pub-card{background:#fff;border:1px solid var(--line);border-radius:14px;margin:10px 14px;padding:13px 14px;box-shadow:var(--shadow);}
+  .pub-card .pname{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .pub-card .pname .pin{color:var(--red);}
+  .pub-card .ploc{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;}
+  .pub-card .ploc .loc{background:var(--gray-soft);border-radius:8px;padding:5px 10px;font-size:12px;color:#555;}
+  .pub-card .ploc .loc b{color:var(--ink);}
+
+  /* Itinerary */
+  .itin-day{margin:12px 14px 0;}
+  .itin-day .dh{font-size:13px;font-weight:700;color:var(--ink);background:#fff;border-radius:10px 10px 0 0;border:1px solid var(--line);border-bottom:0;padding:9px 12px;display:flex;justify-content:space-between;}
+  .itin-day .dh .conf{color:#c0392b;font-size:11px;font-weight:600;}
+  .itin-item{background:#fff;border:1px solid var(--line);border-top:0;padding:10px 12px;display:flex;gap:10px;align-items:center;}
+  .itin-item:last-child{border-radius:0 0 10px 10px;}
+  .itin-item .time{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--red);width:52px;text-align:center;line-height:1.3;}
+  .itin-item .info{flex:1;min-width:0;}
+  .itin-item .info .t{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .itin-item .info .l{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .itin-item .del{flex:0 0 auto;color:var(--gray);font-size:12px;background:var(--gray-soft);border:0;border-radius:14px;padding:5px 10px;cursor:pointer;}
+  .conflict{background:#fff6f5 !important;}
+  .empty{text-align:center;color:var(--muted);padding:60px 24px;font-size:13px;line-height:1.7;}
+  .empty .big{font-size:40px;margin-bottom:10px;}
+  .clear-all{display:block;margin:16px auto 4px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:8px 18px;font-size:12px;cursor:pointer;}
+
+  /* Bottom sheet */
+  .mask{position:fixed;inset:0;background:rgba(20,15,10,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;display:flex;align-items:flex-end;justify-content:center;}
+  .mask.show{opacity:1;pointer-events:auto;}
+  .sheet{background:#fff;width:100%;max-width:430px;border-radius:20px 20px 0 0;padding:18px 18px 26px;transform:translateY(100%);transition:transform .25s;max-height:88vh;overflow-y:auto;}
+  .mask.show .sheet{transform:translateY(0);}
+  .sheet .grip{width:40px;height:4px;background:#ddd;border-radius:3px;margin:0 auto 14px;}
+  .sheet h2{margin:0 0 4px;font-size:18px;line-height:1.35;}
+  .sheet .s-guest{color:var(--muted);font-size:13px;margin-bottom:14px;}
+  .sheet .s-guest b{color:var(--ink);}
+  .sheet .block{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);align-items:flex-start;}
+  .sheet .block .ic{width:30px;height:30px;flex:0 0 auto;background:var(--red-soft);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--red);}
+  .sheet .block .ct{flex:1;}
+  .sheet .block .ct .k{font-size:11px;color:var(--muted);}
+  .sheet .block .ct .v{font-size:14px;margin-top:2px;line-height:1.5;font-weight:600;}
+  .sheet .block .ct .v small{font-weight:400;color:#666;display:block;margin-top:3px;font-size:12.5px;line-height:1.5;}
+  .sheet .s-btn{width:100%;margin-top:18px;border:0;border-radius:24px;padding:13px;font-size:15px;font-weight:700;background:var(--red);color:#fff;cursor:pointer;}
+  .sheet .s-btn.added{background:var(--gray-soft);color:var(--gray);}
+
+  .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(35,32,28,.92);color:#fff;font-size:13px;padding:10px 18px;border-radius:22px;opacity:0;transition:.25s;z-index:30;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .note{margin:14px;font-size:11px;color:var(--gray);text-align:center;line-height:1.6;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="header">
+    <h1>📚 上海书展·文学周查询 <span class="tag">手搓版</span></h1>
+    <div class="sub">文学周 8/10–8/16 · 书展 8/12–8/18 · 双主场 上海展览中心·上海书城</div>
+    <div class="meta">
+      <span>🎫 10元/5元</span>
+      <span>📍 展览中心·书城</span>
+      <span>🌏 1400+场活动</span>
+    </div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c4271f" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+      <input id="searchInput" placeholder="搜索嘉宾、活动名称、出版社或展馆…" />
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-view="events">🔍 活动查询</div>
+    <div class="tab" data-view="pubs">🏢 出版社</div>
+    <div class="tab" data-view="itin">🗺️ 我的行程<span class="badge hidden" id="itinBadge">0</span></div>
+  </div>
+
+  <div class="scroll">
+    <!-- EVENTS VIEW -->
+    <div id="view-events">
+      <div class="filters">
+        <div class="seg" id="typeSeg">
+          <div class="seg-item active" data-type="all">全部</div>
+          <div class="seg-item" data-type="lit">文学周大讲座</div>
+          <div class="seg-item" data-type="lecture">书展讲座</div>
+          <div class="seg-item" data-type="booth">常驻展区</div>
+        </div>
+
+        <div id="lectureFilters">
+          <div class="filter-label">按日期</div>
+          <div class="date-pills" id="datePills"></div>
+          <div class="filter-label" style="margin-top:12px;">按预约状态</div>
+          <div class="status-chips" id="statusChips">
+            <div class="chip active" data-status="all">全部</div>
+            <div class="chip" data-status="open">可预约</div>
+            <div class="chip" data-status="full">已约满</div>
+            <div class="chip" data-status="free">免预约</div>
+          </div>
+        </div>
+
+        <div class="booth-note hidden" id="boothNote">
+          🏕️ <b>常驻展区 / 小摊位</b>：全天开放、无需预约，可随时前往。按<b>展馆区域</b>查询即可，没有固定场次时间，不必排进"时段行程"，当作<b>逛展清单</b>更合适。
+        </div>
+      </div>
+      <div class="result-info"><span>共 <b id="evCount">0</b> 项</span><span id="evHint"></span></div>
+      <div id="eventList"></div>
+    </div>
+
+    <!-- PUBLISHERS VIEW -->
+    <div id="view-pubs" class="hidden">
+      <div class="pub-hint">💡 想找出版社？输入名称即可查到它的<b>展馆</b>和<b>展位号</b>，逛展前先规划好路线，少走冤枉路。</div>
+      <div id="pubList"></div>
+    </div>
+
+    <!-- ITINERARY VIEW -->
+    <div id="view-itin" class="hidden">
+      <div id="itinList"></div>
+      <button class="clear-all hidden" id="clearAll">清空行程</button>
+    </div>
+
+    <div class="note">本页为演示用示例数据，整理自公开帖子；具体时间、场地与预约以「上海书展」官方发布为准。<br/>行程保存在本机浏览器，换设备不会同步。</div>
+  </div>
+</div>
+
+<div class="mask" id="mask"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- 示例数据（整理自公开帖子，以官方为准） ---------- */
+const WEEK = {"2026-08-10":"周一","2026-08-11":"周二","2026-08-12":"周三","2026-08-13":"周四","2026-08-14":"周五","2026-08-15":"周六","2026-08-16":"周日","2026-08-17":"周一","2026-08-18":"周二"};
+const TYPE_TXT = {lit:"文学周大讲座", lecture:"书展讲座", booth:"常驻展区"};
+const STATUS_TXT = {open:"可预约", full:"已约满", free:"免预约", media:"媒体专场"};
+
+// type: lit=国际文学周大讲座 / lecture=书展重要讲座 / booth=常驻展区(全天)
+const EVENTS = [
+  /* ===== 国际文学周大讲座 (8/10–8/16) ===== */
+  {id:1, type:"lit", name:"第十三届上海国际文学周开幕式", guest:"文学周嘉宾", date:"2026-08-10", start:"19:00", end:"20:30", hall:"思南文学之家", status:"open", book:"预约入口：文景 / 世纪朵云 渠道，名额有限。", pub:"上海书展组委会", desc:"文学周正式启幕，年度主题单元开场。"},
+  {id:2, type:"lit", name:"莫言 · 文学周主题演讲", guest:"莫言", date:"2026-08-12", start:"14:00", end:"15:30", hall:"思南文学之家", status:"open", book:"预约入口：文景 / 上海书城微信小程序。", pub:"作家出版社", desc:"诺贝尔文学奖得主莫言专场，文学周重磅。"},
+  {id:3, type:"lit", name:"珍妮特·温特森 对谈（文字复兴单元）", guest:"珍妮特·温特森", date:"2026-08-14", start:"19:00", end:"20:30", hall:"上海图书馆东馆", status:"open", book:"预约入口：上海图书馆信使。", pub:"新经典", desc:"英国国宝级作家，文字复兴单元重磅嘉宾。"},
+  {id:4, type:"lit", name:"文学周主论坛（媒体专场）", guest:"多位作家", date:"2026-08-11", start:"14:00", end:"16:00", hall:"上海展览中心", status:"media", book:"媒体专场，原文未提供公众报名方式。", pub:"上海书展组委会", desc:"8/11 主论坛为媒体专场，公众不参与。"},
+  {id:5, type:"lit", name:"诗歌之夜 · 文字复兴单元", guest:"诗人专场", date:"2026-08-15", start:"19:00", end:"20:30", hall:"朵云书院", status:"open", book:"预约入口：世纪朵云。", pub:"世纪朵云", desc:"沉浸式诗歌诵读夜。"},
+  {id:6, type:"lit", name:"译介与出海：中国文学如何被世界阅读", guest:"翻译家·出版人", date:"2026-08-13", start:"10:00", end:"11:30", hall:"上海书城", status:"open", book:"预约入口：上海书城微信小程序。", pub:"上海书城", desc:"探讨中国文学海外传播。"},
+  {id:7, type:"lit", name:"青年作家对谈", guest:"青年作家", date:"2026-08-16", start:"15:00", end:"16:30", hall:"上海展览中心", status:"open", book:"预约入口：文景。", pub:"文景", desc:"文学周收官日青年力量专场。"},
+  {id:8, type:"lit", name:"西语文学专场（塞万提斯学院）", guest:"西语作家", date:"2026-08-12", start:"16:00", end:"17:30", hall:"上海西班牙文化中心", status:"open", book:"预约入口：上海西班牙文化中心-塞万提斯学院。", pub:"塞万提斯学院", desc:"国际文学单元西语文学专场。"},
+
+  /* ===== 书展重要讲座 (8/12–8/18 双主场/分会场) ===== */
+  {id:9, type:"lecture", name:"莫言 读者见面会（书展）", guest:"莫言", date:"2026-08-13", start:"14:00", end:"15:30", hall:"友谊会堂（上海展览中心）", status:"full", book:"「上海书展」官方小程序实名预约，本场名额已约满，可看直播间回放。", pub:"作家出版社"},
+  {id:10, type:"lecture", name:"马伯庸《显微镜下的大明》分享会", guest:"马伯庸", date:"2026-08-14", start:"10:30", end:"12:00", hall:"东一馆活动区", status:"open", book:"「上海书展」小程序预约，需绑定身份证；当日可现场排队候补。", pub:"博集天卷"},
+  {id:11, type:"lecture", name:"迟子建《白雪乌鸦》新书发布", guest:"迟子建", date:"2026-08-15", start:"15:00", end:"16:30", hall:"西一馆活动区", status:"open", book:"小程序预约，座位有限先到先得。", pub:"人民文学出版社"},
+  {id:12, type:"lecture", name:"梁晓声谈《人世间》", guest:"梁晓声", date:"2026-08-16", start:"19:00", end:"20:30", hall:"友谊会堂（上海展览中心）", status:"free", book:"夜场免预约，凭书展门票直接入场。", pub:"中国青年出版社"},
+  {id:13, type:"lecture", name:"叶辛：城市的记忆", guest:"叶辛", date:"2026-08-13", start:"10:00", end:"11:30", hall:"中央大厅活动区", status:"open", book:"「上海书展」小程序预约。", pub:"上海人民出版社"},
+  {id:14, type:"lecture", name:"梁永安：我们时代的爱情课", guest:"梁永安", date:"2026-08-14", start:"14:00", end:"15:30", hall:"上海书城1楼中庭", status:"free", book:"上海书城主会场免预约，自由进出。", pub:"上海书城"},
+  {id:15, type:"lecture", name:"沈嘉禄《上海人》签售", guest:"沈嘉禄", date:"2026-08-15", start:"11:00", end:"12:00", hall:"东一馆签售区", status:"free", book:"免预约，现场排队签售。", pub:"上海文化出版社"},
+  {id:16, type:"lecture", name:"梅子涵儿童文学讲座", guest:"梅子涵", date:"2026-08-12", start:"10:00", end:"11:00", hall:"西二馆少儿区", status:"open", book:"小程序预约，亲子专场。", pub:"少年儿童出版社"},
+  {id:17, type:"lecture", name:"郭毅可：当AI遇见阅读", guest:"郭毅可", date:"2026-08-16", start:"14:00", end:"15:30", hall:"东二馆数智阅读区", status:"open", book:"小程序预约，体验AI荐书。", pub:"中信出版集团"},
+  {id:18, type:"lecture", name:"滕俊杰导演对谈", guest:"滕俊杰", date:"2026-08-17", start:"15:00", end:"16:30", hall:"友谊会堂（上海展览中心）", status:"full", book:"预约已满，可于上观新闻APP看直播。", pub:"上海文艺出版社"},
+  {id:19, type:"lecture", name:"李泓冰：新闻与深度阅读", guest:"李泓冰", date:"2026-08-14", start:"19:00", end:"20:30", hall:"东二馆活动区", status:"free", book:"免预约，直接入场。", pub:"复旦大学出版社"},
+  {id:20, type:"lecture", name:"朱凡医生：健康阅读与护眼", guest:"朱凡", date:"2026-08-15", start:"14:00", end:"15:00", hall:"上海书城2楼", status:"free", book:"免预约。", pub:"上海科学技术出版社"},
+  {id:21, type:"lecture", name:"鲁迅文学奖作家沙龙", guest:"获奖作家", date:"2026-08-16", start:"10:30", end:"12:00", hall:"西一馆活动区", status:"open", book:"小程序预约。", pub:"作家出版社"},
+  {id:22, type:"lecture", name:"余华《文城》签售", guest:"余华", date:"2026-08-17", start:"11:00", end:"12:00", hall:"东一馆签售区", status:"full", book:"预约已满。", pub:"新经典"},
+  {id:23, type:"lecture", name:"紫金陈 悬疑写作分享", guest:"紫金陈", date:"2026-08-14", start:"15:00", end:"16:30", hall:"东一馆活动区", status:"open", book:"「上海书展」小程序预约。", pub:"博集天卷"},
+  {id:24, type:"lecture", name:"法医秦明 新书分享", guest:"法医秦明", date:"2026-08-15", start:"16:00", end:"17:30", hall:"东一馆活动区", status:"full", book:"预约已满。", pub:"北京联合出版"},
+  {id:25, type:"lecture", name:"混子哥（陈磊）半小时漫画分享", guest:"混子哥", date:"2026-08-13", start:"15:00", end:"16:30", hall:"上海书城1楼中庭", status:"open", book:"上海书城免预约，自由参加。", pub:"混知"},
+  {id:26, type:"lecture", name:"白茶「吾皇猫」签售", guest:"白茶", date:"2026-08-16", start:"11:00", end:"12:00", hall:"东一馆签售区", status:"full", book:"预约已满。", pub:"读客文化"},
+  {id:27, type:"lecture", name:"第三届全国知识博主大会", guest:"Alan Macfarlane·渤海小吏等", date:"2026-08-18", start:"14:00", end:"16:00", hall:"友谊会堂三楼", status:"open", book:"扫码免费预约报名，前200名送限定明信片。", pub:"上海书展·小红书", desc:"历史/人文/科普/国际传播/艺术博主同台，圆桌谈AI时代阅读。"},
+  {id:28, type:"lecture", name:"北大社 名家面对面", guest:"北大博雅讲坛", date:"2026-08-13", start:"15:00", end:"16:30", hall:"东一馆活动区", status:"open", book:"小程序预约。", pub:"北京大学出版社"},
+  {id:29, type:"lecture", name:"文化IP联动发布会", guest:"IP联动", date:"2026-08-13", start:"16:00", end:"17:00", hall:"中央大厅活动区", status:"open", book:"小程序预约。", pub:"上海世纪出版集团"},
+  {id:30, type:"lecture", name:"茅盾文学奖作品诵读夜", guest:"诵读嘉宾", date:"2026-08-17", start:"19:00", end:"20:30", hall:"友谊会堂（上海展览中心）", status:"free", book:"夜场免预约。", pub:"人民文学出版社"},
+  {id:31, type:"lecture", name:"读书马拉松", guest:"共读挑战", date:"2026-08-16", start:"13:00", end:"17:00", hall:"上海书城3楼", status:"open", book:"小程序报名，需连续阅读4小时。", pub:"上海书城"},
+  {id:32, type:"lecture", name:"行走苏河·阅见上海 City Walk", guest:"城市行走", date:"2026-08-15", start:"09:00", end:"11:00", hall:"集合点：上海书城门口", status:"open", book:"需在小程序报名，限额30人。", pub:"上海书城"},
+  {id:33, type:"lecture", name:"浦东分会场：悦读山海讲座", guest:"浦东分馆", date:"2026-08-14", start:"14:00", end:"16:00", hall:"浦东分会场", status:"free", book:"分会场免预约。", pub:"浦东新区"},
+
+  /* ===== 常驻展区 / 小摊位（全天开放，免预约） ===== */
+  {id:34, type:"booth", name:"黑龙江主宾省主题展", guest:"主宾省展区", date:"2026-08-12", allday:true, hall:"中央大厅 A20", status:"free", book:"展览全天开放，免预约。", pub:"黑龙江出版集团", desc:"主宾省展区，冰雪文化 + 精品图书集中呈现。"},
+  {id:35, type:"booth", name:"阅界夜市", guest:"文创·非遗·美食·演艺", date:"2026-08-12", allday:true, hall:"上海书城外广场", status:"free", book:"免预约，自由逛玩。", pub:"上海书城", desc:"升级版夜市，文创/非遗/美食/演艺融合，书卷气遇烟火气。"},
+  {id:36, type:"booth", name:"非遗文创市集", guest:"手作·非遗", date:"2026-08-12", allday:true, hall:"上海书城外广场", status:"free", book:"免预约。", pub:"上海书城", desc:"手作非遗、限定周边，适合慢慢逛慢慢淘。"},
+  {id:37, type:"booth", name:"童书插画特展", guest:"插画展区", date:"2026-08-12", allday:true, hall:"西二馆", status:"free", book:"免预约。", pub:"少年儿童出版社", desc:"获奖童书插画原作展，亲子必逛。"},
+  {id:38, type:"booth", name:"AI智能荐书体验区", guest:"数智展区", date:"2026-08-12", allday:true, hall:"东二馆数智阅读区", status:"free", book:"全天开放，免预约，现场体验。", pub:"上海书展组委会", desc:"AI荐书、机器人辅助阅读、阅读黑客松、AI Skill大赛。"},
+  {id:39, type:"booth", name:"世纪出版集团展区", guest:"上海世纪出版", date:"2026-08-12", allday:true, hall:"西一馆 C01", status:"free", book:"免预约。", pub:"上海世纪出版集团", desc:"沪上主力出版集团集中展销。"},
+  {id:40, type:"booth", name:"中信出版展区", guest:"中信出版", date:"2026-08-12", allday:true, hall:"东二馆 E10", status:"free", book:"免预约。", pub:"中信出版集团", desc:"经管/社科/文学重点新书展销。"},
+  {id:41, type:"booth", name:"主题图书展", guest:"主题出版", date:"2026-08-12", allday:true, hall:"中央大厅", status:"free", book:"免预约。", pub:"上海书展组委会", desc:"年度主题出版物集中展示。"}
+];
+
+const PUBS = [
+  {name:"人民出版社", hall:"中央大厅", booth:"A01"},
+  {name:"人民文学出版社", hall:"中央大厅", booth:"A05"},
+  {name:"中华书局", hall:"中央大厅", booth:"A08"},
+  {name:"三联书店", hall:"中央大厅", booth:"A18"},
+  {name:"黑龙江出版集团（主宾省）", hall:"中央大厅", booth:"A20"},
+  {name:"商务印书馆", hall:"中央大厅", booth:"A12"},
+  {name:"北京大学出版社", hall:"东一馆", booth:"B05"},
+  {name:"浙江出版联合集团", hall:"东一馆", booth:"B12"},
+  {name:"新星出版社", hall:"东一馆", booth:"B20"},
+  {name:"作家出版社", hall:"东一馆", booth:"B08"},
+  {name:"上海世纪出版集团", hall:"西一馆", booth:"C01"},
+  {name:"上海人民出版社", hall:"西一馆", booth:"C03"},
+  {name:"上海译文出版社", hall:"西一馆", booth:"C08"},
+  {name:"译林出版社", hall:"西一馆", booth:"C15"},
+  {name:"少年儿童出版社", hall:"西二馆", booth:"D02"},
+  {name:"华东师范大学出版社", hall:"西二馆", booth:"D10"},
+  {name:"中信出版集团", hall:"东二馆", booth:"E10"},
+  {name:"广西师范大学出版社", hall:"东二馆", booth:"E03"},
+  {name:"果麦文化", hall:"东二馆", booth:"E15"},
+  {name:"读客文化", hall:"东二馆", booth:"E18"}
+];
+
+/* ---------- 状态 ---------- */
+let state = { view:"events", type:"all", date:"all", status:"all", q:"" };
+let itinerary = loadItin();
+
+function loadItin(){ try{ return JSON.parse(localStorage.getItem("shbook_itin")||"[]"); }catch(e){ return []; } }
+function saveItin(){ localStorage.setItem("shbook_itin", JSON.stringify(itinerary)); }
+
+function fmtDate(d){ return d.slice(5).replace("-","/") + " " + (WEEK[d]||""); }
+function evtById(id){ return EVENTS.find(e=>e.id===id); }
+function inItin(id){ return itinerary.includes(id); }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),1600); }
+
+/* ---------- 渲染：日期胶囊 ---------- */
+function renderDatePills(){
+  const dates = [...new Set(EVENTS.filter(e=>!e.allday).map(e=>e.date))].sort();
+  const box = document.getElementById("datePills");
+  let html = `<div class="pill ${state.date==="all"?"active":""}" data-date="all">全程<b>${dates.length}天</b></div>`;
+  dates.forEach(d=>{
+    const active = state.date===d ? "active":"";
+    html += `<div class="pill ${active}" data-date="${d}">${d.slice(5).replace("-","/")}<b>${WEEK[d]||""}</b></div>`;
+  });
+  box.innerHTML = html;
+  box.querySelectorAll(".pill").forEach(p=>p.onclick=()=>{ state.date=p.dataset.date; renderDatePills(); renderEvents(); });
+}
+
+/* ---------- 渲染：活动列表 ---------- */
+function renderEvents(){
+  state.q = document.getElementById("searchInput").value.trim();
+  const isBooth = state.type==="booth";
+
+  let list = EVENTS.filter(e=>{
+    if(state.type!=="all" && e.type!==state.type) return false;
+    if(!isBooth){
+      if(state.date!=="all" && e.date!==state.date) return false;
+      if(state.status!=="all" && e.status!==state.status) return false;
+    }
+    if(state.q){
+      const hay = (e.name+e.guest+e.pub+e.hall+(e.desc||"")).toLowerCase();
+      if(!hay.includes(state.q.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("evCount").textContent = list.length;
+  let hint = "";
+  if(isBooth) hint = "全天开放 · 逛展清单";
+  else if(state.q) hint = `“${state.q}” 的结果`;
+  else if(state.date!=="all") hint = fmtDate(state.date);
+  else if(state.type==="lit") hint = "8/10–8/16";
+  else if(state.type==="lecture") hint = "8/12–8/18";
+  document.getElementById("evHint").textContent = hint;
+
+  const box = document.getElementById("eventList");
+  if(!list.length){ box.innerHTML = `<div class="empty"><div class="big">🔍</div>没有找到匹配的内容<br/>换个关键词或筛选条件试试</div>`; return; }
+  box.innerHTML = list.map(e=>{
+    const added = inItin(e.id);
+    const timeTxt = e.allday ? "全天开放" : `${fmtDate(e.date)} ${e.start}–${e.end}`;
+    const tag = `<span class="type-tag t-${e.type}">${TYPE_TXT[e.type]}</span>`;
+    const descHtml = e.desc ? `<div class="desc">${e.desc}</div>` : "";
+    return `<div class="card" data-id="${e.id}">
+      <div class="top">
+        <div>
+          <div>${tag}</div>
+          <div class="name">${e.name}</div>
+          <div class="guest">嘉宾：<b>${e.guest}</b></div>
+        </div>
+        <span class="badge-status s-${e.status}">${STATUS_TXT[e.status]}</span>
+      </div>
+      <div class="row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span>${timeTxt}</span>
+      </div>
+      <div class="row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span>${e.hall}</span>
+        <button class="bookbtn ${added?"added":""}" data-add="${e.id}">${added?"✓ 已加入":"+ 加入"}</button>
+      </div>
+      ${descHtml}
+    </div>`;
+  }).join("");
+
+  box.querySelectorAll(".card").forEach(c=>c.onclick=(ev)=>{ if(ev.target.dataset.add) return; openSheet(+c.dataset.id); });
+  box.querySelectorAll("[data-add]").forEach(b=>b.onclick=(ev)=>{ ev.stopPropagation(); toggleItin(+b.dataset.add); });
+}
+
+/* ---------- 渲染：出版社 ---------- */
+function renderPubs(){
+  state.q = document.getElementById("searchInput").value.trim();
+  let list = PUBS;
+  if(state.q) list = PUBS.filter(p=>p.name.toLowerCase().includes(state.q.toLowerCase()) || p.hall.includes(state.q) || p.booth.toLowerCase().includes(state.q.toLowerCase()));
+  const box = document.getElementById("pubList");
+  if(!list.length){ box.innerHTML = `<div class="empty"><div class="big">🏢</div>没找到这家出版社<br/>试试「人民」「译文」「中信」等关键词</div>`; return; }
+  box.innerHTML = list.map(p=>`
+    <div class="pub-card">
+      <div class="pname"><span class="pin">📍</span>${p.name}</div>
+      <div class="ploc">
+        <span class="loc">展馆：<b>${p.hall}</b></span>
+        <span class="loc">展位：<b>${p.booth}</b></span>
+      </div>
+    </div>`).join("");
+}
+
+/* ---------- 渲染：行程 ---------- */
+function renderItin(){
+  const box = document.getElementById("itinList");
+  const badge = document.getElementById("itinBadge");
+  const clearBtn = document.getElementById("clearAll");
+  badge.textContent = itinerary.length;
+  badge.classList.toggle("hidden", itinerary.length===0);
+  clearBtn.classList.toggle("hidden", itinerary.length===0);
+
+  if(!itinerary.length){
+    box.innerHTML = `<div class="empty"><div class="big">🗺️</div>行程还是空的<br/>讲座/大课加入「时段行程」排好时间不撞车；<br/>常驻展区当作「逛展清单」随时去</div>`;
+    return;
+  }
+  const items = itinerary.map(id=>evtById(id)).filter(Boolean)
+    .sort((a,b)=> a.date===b.date ? (a.allday?1:a.start).localeCompare(b.allday?1:b.start) : a.date.localeCompare(b.date));
+
+  const days = {};
+  items.forEach(e=>{ (days[e.date]=days[e.date]||[]).push(e); });
+
+  let html = "";
+  Object.keys(days).sort().forEach(d=>{
+    const arr = days[d];
+    const conflict = findConflicts(arr);
+    html += `<div class="itin-day">
+      <div class="dh"><span>${fmtDate(d)}${arr.some(e=>e.allday)?" · 含常驻展区":""}</span>${conflict.size?"<span class='conf'>⚠ 时段冲突</span>":""}</div>`;
+    arr.forEach(e=>{
+      const cf = conflict.has(e.id) ? "conflict":"";
+      const timeTxt = e.allday ? "全天" : `${e.start}<br/>${e.end}`;
+      const sub = e.allday ? `${e.hall} · 可随时前往` : `${e.hall} · ${TYPE_TXT[e.type]}`;
+      html += `<div class="itin-item ${cf}">
+        <div class="time">${timeTxt}</div>
+        <div class="info"><div class="t">${e.name}</div><div class="l">${sub}</div></div>
+        <button class="del" data-del="${e.id}">移除</button>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  box.innerHTML = html;
+  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>toggleItin(+b.dataset.del, true));
+}
+
+function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+function overlap(a,b){ return toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(b.end); }
+function findConflicts(arr){
+  const set = new Set();
+  const timed = arr.filter(e=>!e.allday);
+  for(let i=0;i<timed.length;i++) for(let j=i+1;j<timed.length;j++) if(overlap(timed[i],timed[j])){ set.add(timed[i].id); set.add(timed[j].id); }
+  return set;
+}
+
+/* ---------- 行程增删 ---------- */
+function toggleItin(id, forceRemove){
+  const idx = itinerary.indexOf(id);
+  if(idx>=0 || forceRemove){ itinerary = itinerary.filter(x=>x!==id); toast("已从行程移除"); }
+  else { itinerary.push(id); toast("已加入 ✓"); }
+  saveItin();
+  renderEvents(); renderItin(); renderPubs();
+}
+
+/* ---------- 底部详情弹层 ---------- */
+function openSheet(id){
+  const e = evtById(id);
+  if(!e) return;
+  const added = inItin(id);
+  const timeTxt = e.allday ? "全天开放（可随时前往）" : `${fmtDate(e.date)} ${e.start} – ${e.end}`;
+  const tag = `<span class="type-tag t-${e.type}">${TYPE_TXT[e.type]}</span>`;
+  const s = document.getElementById("sheet");
+  s.innerHTML = `
+    <div class="grip"></div>
+    <div>${tag}</div>
+    <h2 style="margin-top:6px">${e.name}</h2>
+    <div class="s-guest">嘉宾：<b>${e.guest}</b> · 主办：<b>${e.pub}</b></div>
+    <div class="block"><div class="ic">📅</div><div class="ct"><div class="k">时间</div><div class="v">${timeTxt}</div></div></div>
+    <div class="block"><div class="ic">📍</div><div class="ct"><div class="k">地点</div><div class="v">${e.hall}</div></div></div>
+    <div class="block"><div class="ic">🎫</div><div class="ct"><div class="k">预约方式</div><div class="v">${STATUS_TXT[e.status]}<small>${e.book}</small></div></div></div>
+    ${e.desc?`<div class="block"><div class="ic">💡</div><div class="ct"><div class="k">简介</div><div class="v"><small>${e.desc}</small></div></div></div>`:""}
+    <button class="s-btn ${added?"added":""}" id="sheetAdd">${added?"✓ 已加入（点击移除）":"+ 加入我的行程"}</button>
+  `;
+  document.getElementById("sheetAdd").onclick=()=>{
+    toggleItin(id);
+    const a2 = inItin(id);
+    const btn = document.getElementById("sheetAdd");
+    btn.className = "s-btn "+(a2?"added":"");
+    btn.textContent = a2?"✓ 已加入（点击移除）":"+ 加入我的行程";
+  };
+  document.getElementById("mask").classList.add("show");
+}
+document.getElementById("mask").onclick=(e)=>{ if(e.target.id==="mask") e.currentTarget.classList.remove("show"); };
+
+/* ---------- 视图切换 ---------- */
+function switchView(v){
+  state.view=v;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.view===v));
+  document.getElementById("view-events").classList.toggle("hidden", v!=="events");
+  document.getElementById("view-pubs").classList.toggle("hidden", v!=="pubs");
+  document.getElementById("view-itin").classList.toggle("hidden", v!=="itin");
+  if(v==="events") renderEvents();
+  if(v==="pubs") renderPubs();
+  if(v==="itin") renderItin();
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchView(t.dataset.view));
+
+/* ---------- 类型分段 ---------- */
+document.querySelectorAll("#typeSeg .seg-item").forEach(it=>it.onclick=()=>{
+  document.querySelectorAll("#typeSeg .seg-item").forEach(x=>x.classList.remove("active"));
+  it.classList.add("active");
+  state.type = it.dataset.type;
+  const isBooth = state.type==="booth";
+  document.getElementById("lectureFilters").classList.toggle("hidden", isBooth);
+  document.getElementById("boothNote").classList.toggle("hidden", !isBooth);
+  renderEvents();
+});
+
+/* ---------- 搜索 ---------- */
+document.getElementById("searchInput").addEventListener("input", ()=>{
+  if(state.view==="events") renderEvents();
+  else if(state.view==="pubs") renderPubs();
+});
+
+/* ---------- 状态筛选 ---------- */
+document.querySelectorAll("#statusChips .chip").forEach(c=>c.onclick=()=>{
+  document.querySelectorAll("#statusChips .chip").forEach(x=>x.classList.remove("active"));
+  c.classList.add("active");
+  state.status=c.dataset.status;
+  renderEvents();
+});
+
+document.getElementById("clearAll").onclick=()=>{
+  if(confirm("确定清空全部行程？")){ itinerary=[]; saveItin(); renderEvents(); renderItin(); renderPubs(); }
+};
+
+/* ---------- 初始化 ---------- */
+renderDatePills();
+renderEvents();
+renderItin();
+</script>
+</body>
+</html>
